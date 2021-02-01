@@ -17,7 +17,6 @@ let flowfile = options.flowFile || 'electronflow.json'; // default Flows file na
 
 const urldash = "/ui/#/0";          // url for the dashboard page
 const urledit = "/red";             // url for the editor page
-const urlconsole = "/console.htm";  // url for the console page
 const urlmap = "/worldmap";         // url for the worldmap
 const nrIcon = "nodered.png"        // Icon for the app in root dir (usually 256x256)
 
@@ -63,10 +62,6 @@ try{
 }
 console.log("Read Config File: ", config)
 
-// TCP port
-const listenPort = config.listenPort
-console.log("redport:",listenPort)
-
 // Add a simple route for static content served from 'public'
 red_app.use("/",express.static("web"));
 //red_app.use(express.static(__dirname +"/public"));
@@ -77,64 +72,34 @@ var server = http.createServer(red_app);
 // Setup user directory and flowfile (if editable)
 var userdir = __dirname;
 
-if (config.editable === true) {
-    // if running as raw electron use the current directory (mainly for dev)
-    if (process.argv[1] && (process.argv[1] === "main.js")) {
-        userdir = __dirname;
-        if ((process.argv.length > 2) && ((process.argv[process.argv.length-1].indexOf(".json") > -1)||(process.argv[process.argv.length-1].indexOf(".flow") > -1))) {
-            if (path.isAbsolute(process.argv[process.argv.length-1])) {
-                flowfile = process.argv[process.argv.length-1];
-            }
-            else {
-                flowfile = path.join(process.cwd(),process.argv[process.argv.length-1]);
-            }
-            store.set("electronFlow",flowfile)
-        }
-        else { flowfile = path.join(userdir,flowfile); }
-    }
-    else { // We set the user directory to be in the users home directory...
-        console.log("ARG",process.argv)
-        userdir = __dirname;
-        if (!fs.existsSync(userdir)) {
-            fs.mkdirSync(userdir);
-        }
-        if ((process.argv.length > 1) && ((process.argv[process.argv.length-1].indexOf(".json") > -1) || (process.argv[process.argv.length-1].indexOf(".flow") > -1))) {
-            if (path.isAbsolute(process.argv[process.argv.length-1])) {
-                flowfile = process.argv[process.argv.length-1];
-            }
-            else {
-                flowfile = path.join(process.cwd(),process.argv[process.argv.length-1]);
-            }
-            store.set("electronFlow",flowfile)
+// Read flow file
+if (process.argv[1] && (process.argv[1] === "main.js")) {
+    userdir = __dirname;
+    if ((process.argv.length > 2) && ((process.argv[process.argv.length-1].indexOf(".json") > -1) || (process.argv[process.argv.length-1].indexOf(".flow") > -1))) {
+        if (path.isAbsolute(process.argv[process.argv.length-1])) {
+            flowfile = process.argv[process.argv.length-1];
         }
         else {
-            if (!fs.existsSync(userdir+"/"+flowfile)) {
-                fs.writeFileSync(userdir+"/"+flowfile, fs.readFileSync(__dirname+"/"+flowfile));
-            }
-            let credFile = flowfile.replace(".json","_cred.json");
-            if (fs.existsSync(__dirname+"/"+credFile) && !fs.existsSync(userdir+"/"+credFile)) {
-                fs.writeFileSync(userdir+"/"+credFile, fs.readFileSync(__dirname+"/"+credFile));
-            }
-            flowfile = path.join(userdir,flowfile);
+            flowfile = path.join(process.cwd(),process.argv[process.argv.length-1]);
         }
+        store.set("electronFlow",flowfile)
     }
+    else { flowfile = path.join(userdir,flowfile); }
 }
-else { store.clear(); }
 
 flowfile = store.get('electronFlow',flowfile);
-console.log("Flow file loaded:",flowfile)
+console.log("Flow file loaded from:",flowfile)
 
 var myFlow;
 try { myFlow = fs.readFileSync(flowfile).toString() }
 catch(e) { myFlow = []; }
-if (urlStart == urlmap && myFlow.indexOf("worldmap") == -1) { urlStart = urledit; }
 if (urlStart == urldash && myFlow.indexOf("ui_base") == -1) { urlStart = urledit; }
 myFlow = null;
 
 // console.log("CWD",process.cwd());
 // console.log("DIR",__dirname);
 // console.log("UserDir :",userdir);
-// console.log("PORT",listenPort);
+// console.log("PORT",config.listenPort);
 console.log("Store",app.getPath('userData'))
 console.log("FlowFile :",flowfile);
 
@@ -152,7 +117,7 @@ ipc.on('clearLogBuffer', function() { logBuffer = []; });
 // Create the settings object - see default settings.js file for other options
 var settings = {
     uiHost: "localhost",    // only allow local connections, remove if you want to allow external access
-    uiPort: listenPort,
+    uiPort: config.listenPort,
     httpAdminRoot: "/red",  // set to false to disable editor and deploy
     httpNodeRoot: "/",
     userDir: userdir,
@@ -165,7 +130,6 @@ var settings = {
         palette: { editable:addNodes }
     },    // enable projects feature
     functionGlobalContext: { },    // enables global context - add extras ehre if you need them
-    /*
     logging: {
         websock: {
             level: 'info',
@@ -190,7 +154,6 @@ var settings = {
             }
         }
     }
-    */
 };
 if (!editable) {
     settings.httpAdminRoot = false;
@@ -227,15 +190,15 @@ var template = [{
         },
         {   label: 'Dashboard',
             accelerator: "Shift+CmdOrCtrl+D",
-            click() { mainWindow.loadURL("http://localhost:"+listenPort+urldash); }
+            click() { mainWindow.loadURL("http://localhost:"+config.listenPort+urldash); }
         },
         {   label: 'Editor',
             accelerator: "Shift+CmdOrCtrl+E",
-            click() { mainWindow.loadURL("http://localhost:"+listenPort+urledit); }
+            click() { mainWindow.loadURL("http://localhost:"+config.listenPort+urledit); }
         },
         {   label: 'Worldmap',
             accelerator: "Shift+CmdOrCtrl+M",
-            click() { mainWindow.loadURL("http://localhost:"+listenPort+urlmap); }
+            click() { mainWindow.loadURL("http://localhost:"+config.listenPort+urlmap); }
         },
         {   type: 'separator' },
         {   type: 'separator' },
@@ -362,7 +325,7 @@ function createConsole() {
         }
     });
     conWindow.loadURL(url.format({
-        pathname: path.join(__dirname, urlconsole),
+        pathname: path.join(__dirname, "/console.htm"),
         protocol: 'file:',
         slashes: true
     }))
@@ -407,7 +370,7 @@ function createWindow() {
     mainWindow.loadURL(`file://${__dirname}/load.html`);
 
     mainWindow.webContents.on('did-get-response-details', function(event, status, newURL, originalURL, httpResponseCode) {
-        if ((httpResponseCode == 404) && (newURL == ("http://localhost:"+listenPort+urlStart))) {
+        if ((httpResponseCode == 404) && (newURL == ("http://localhost:"+config.listenPort+urlStart))) {
             setTimeout(mainWindow.webContents.reload, 250);
         }
     });
@@ -450,19 +413,19 @@ function createWindow() {
         const touchButton1 = new TouchBarButton({
             label: 'Dashboard',
             backgroundColor: '#640000',
-            click: () => { mainWindow.loadURL("http://localhost:"+listenPort+urldash); }
+            click: () => { mainWindow.loadURL("http://localhost:"+config.listenPort+urldash); }
         });
 
         const touchButton2 = new TouchBarButton({
             label: 'Editor',
             backgroundColor: '#640000',
-            click: () => { mainWindow.loadURL("http://localhost:"+listenPort+urledit); }
+            click: () => { mainWindow.loadURL("http://localhost:"+config.listenPort+urledit); }
         });
 
         const touchButton3 = new TouchBarButton({
             label: 'Map',
             backgroundColor: '#640000',
-            click: () => { mainWindow.loadURL("http://localhost:"+listenPort+urlmap); }
+            click: () => { mainWindow.loadURL("http://localhost:"+config.listenPort+urlmap); }
         });
 
         const touchButton4 = new TouchBarButton({
@@ -545,7 +508,7 @@ app.on('activate', function() {
     // dock icon is clicked and there are no other windows open.
     if (mainWindow === null) {
         createWindow();
-        mainWindow.loadURL("http://localhost:"+listenPort+urlStart);
+        mainWindow.loadURL("http://localhost:"+config.listenPort+urlStart);
     }
 });
 
@@ -562,7 +525,7 @@ if (process.platform === 'darwin') {
 
 // Start the Node-RED runtime, then load the inital dashboard page
 RED.start().then(function() {
-    server.listen(listenPort,"localhost",function() {
-        mainWindow.loadURL("http://localhost:"+listenPort+urlStart);
+    server.listen(config.listenPort,"localhost",function() {
+        mainWindow.loadURL("http://localhost:"+config.listenPort+urlStart);
     });
 });
