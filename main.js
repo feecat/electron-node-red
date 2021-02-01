@@ -119,7 +119,7 @@ var settings = {
     editorTheme: {
         projects:{ enabled:false },
         header: { title: options.productName },
-        palette: { editable:config.blockinstallnodes }
+        palette: { editable:config.allowinstallnodes }
     },    // enable projects feature
     functionGlobalContext: { },    // enables global context - add extras ehre if you need them
     logging: {

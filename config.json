@@ -7,5 +7,5 @@
     "height": 768,
     "fullscreen": false,
     "hidetotray": false,
-    "blockinstallnodes": false
+    "allowinstallnodes": true
 }
