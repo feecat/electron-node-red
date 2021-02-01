@@ -13,13 +13,11 @@ let flowfile = options.flowFile || 'electronflow.json'; // default Flows file na
 
 const urldash = "/ui/#/0";          // url for the dashboard page
 const urledit = "/red";             // url for the editor page
-const urlmap = "/worldmap";         // url for the worldmap
 const nrIcon = "nodered.png"        // Icon for the app in root dir (usually 256x256)
 
 let urlStart = urldash;                      // Start on this page
 if (!packages.hasOwnProperty("node-red-dashboard")) { urlStart = urledit; }
 if (options.start.toLowerCase() === "editor") { urlStart = urledit; }
-if (options.start.toLowerCase() === "map") { urlStart = urlmap; }
 
 const os = require('os');
 const fs = require('fs');
@@ -153,6 +151,9 @@ if (!config.editable) {
     settings.httpAdminRoot = false;
     settings.readOnly = true;
 }
+//save all nodes for local folder
+settings.userDir = './.node-red/';
+settings.nodesDir = './.node-red/node_modules';
 
 // Initialise the runtime with a server and settings
 RED.init(server,settings);
@@ -412,12 +413,6 @@ function createWindow() {
             label: 'Editor',
             backgroundColor: '#640000',
             click: () => { mainWindow.loadURL("http://localhost:"+config.listenPort+urledit); }
-        });
-
-        const touchButton3 = new TouchBarButton({
-            label: 'Map',
-            backgroundColor: '#640000',
-            click: () => { mainWindow.loadURL("http://localhost:"+config.listenPort+urlmap); }
         });
 
         const touchButton4 = new TouchBarButton({

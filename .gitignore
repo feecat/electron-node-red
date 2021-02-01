@@ -6,6 +6,7 @@ logs
 .config.*
 .electronflow*
 .sessions.json
+.node-red
 *darwin-x64*
 *linux-x64*
 *win32-x64*
