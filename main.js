@@ -8,11 +8,7 @@ if (pkg.hasOwnProperty("dependencies")) { packages = pkg["dependencies"] }
 
 // Some settings you can edit if you don't set them in package.json
 //console.log(options)
-const editable = options.editable || false;      // set this to false to create a run only application - no editor/no console
-const allowLoadSave = options.allowLoadSave || false; // set to true to allow import and export of flow file
-let showMap = options.showMap || false;       // set to true to add Worldmap to the menu
 const kioskMode = options.kioskMode || false;   // set to true to start in kiosk mode
-const addNodes = options.addNodes || false;      // set to false to block installing extra nodes
 let flowfile = options.flowFile || 'electronflow.json'; // default Flows file name - loaded at start
 
 const urldash = "/ui/#/0";          // url for the dashboard page
@@ -24,8 +20,6 @@ let urlStart = urldash;                      // Start on this page
 if (!packages.hasOwnProperty("node-red-dashboard")) { urlStart = urledit; }
 if (options.start.toLowerCase() === "editor") { urlStart = urledit; }
 if (options.start.toLowerCase() === "map") { urlStart = urlmap; }
-
-if (!packages.hasOwnProperty("node-red-contrib-web-worldmap")) { showMap = false; }
 
 const os = require('os');
 const fs = require('fs');
@@ -127,7 +121,7 @@ var settings = {
     editorTheme: {
         projects:{ enabled:false },
         header: { title: options.productName },
-        palette: { editable:addNodes }
+        palette: { editable:config.blockinstallnodes }
     },    // enable projects feature
     functionGlobalContext: { },    // enables global context - add extras ehre if you need them
     logging: {
@@ -210,6 +204,7 @@ var template = [{
         { type: 'separator' },
         { role: 'togglefullscreen' },
         {   label: 'Minimize To Tray',
+            accelerator: "F12",
             click() { mainWindow.hide(); }
         },
         { role: 'quit' }
@@ -433,7 +428,6 @@ function createWindow() {
 
         var items = [ touchButton1 ];
         if (config.editable) { items.push(touchButton2) }
-        if (showMap) { items.push(touchButton3) }
         if (config.editable) {
             items.push(new TouchBarSpacer({ size: 'flexible' }));
             items.push(touchButton4);
