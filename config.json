@@ -1,5 +1,8 @@
 {
     "listenPort": "18880",
     "editable": true,
-    "urlStart": "/ui/"
+    "urlStart": "/ui/",
+    "allowLoadSave": false,
+    "width": 1024,
+    "height": 768
 }

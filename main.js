@@ -136,7 +136,7 @@ var settings = {
             metrics: false,
             handler: function() {
                 return function(msg) {
-                    if (editable) {  // No logging if not editable
+                    if (config.editable) {  // No logging if not editable
                         var ts = (new Date(msg.timestamp)).toISOString();
                         ts = ts.replace("Z"," ").replace("T"," ");
                         var line = "";
@@ -155,7 +155,7 @@ var settings = {
         }
     }
 };
-if (!editable) {
+if (!config.editable) {
     settings.httpAdminRoot = false;
     settings.readOnly = true;
 }
@@ -196,10 +196,6 @@ var template = [{
             accelerator: "Shift+CmdOrCtrl+E",
             click() { mainWindow.loadURL("http://localhost:"+config.listenPort+urledit); }
         },
-        {   label: 'Worldmap',
-            accelerator: "Shift+CmdOrCtrl+M",
-            click() { mainWindow.loadURL("http://localhost:"+config.listenPort+urlmap); }
-        },
         {   type: 'separator' },
         {   type: 'separator' },
         {   label: 'Documentation',
@@ -217,14 +213,12 @@ var template = [{
     ]
 }];
 
-if (!showMap) { template[0].submenu.splice(6,1); }
-
-if (!editable) {
+if (!config.editable) {
     template[0].submenu.splice(3,1);
     template[0].submenu.splice(4,1);
 }
 
-if (!allowLoadSave) { template[0].submenu.splice(0,2); }
+if (!config.allowLoadSave) { template[0].submenu.splice(0,2); }
 
 // Top and tail menu on Mac
 if (process.platform === 'darwin') {
@@ -351,8 +345,8 @@ function createConsole() {
 function createWindow() {
     mainWindow = new BrowserWindow({
         title: "Node-RED",
-        width: 1024,
-        height: 768,
+        width: config.width,
+        height: config.height,
         icon: path.join(__dirname, nrIcon),
         fullscreenable: true,
         autoHideMenuBar: true,
@@ -435,9 +429,9 @@ function createWindow() {
         });
 
         var items = [ touchButton1 ];
-        if (editable) { items.push(touchButton2) }
+        if (config.editable) { items.push(touchButton2) }
         if (showMap) { items.push(touchButton3) }
-        if (editable) {
+        if (config.editable) {
             items.push(new TouchBarSpacer({ size: 'flexible' }));
             items.push(touchButton4);
         }
