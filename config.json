@@ -1,0 +1,5 @@
+{
+    "listenPort": "18880",
+    "editable": true,
+    "urlStart": "/ui/"
+}

@@ -28,10 +28,6 @@ if (options.start.toLowerCase() === "map") { urlStart = urlmap; }
 
 if (!packages.hasOwnProperty("node-red-contrib-web-worldmap")) { showMap = false; }
 
-// TCP port to use
-//const listenPort = "18880";                           // fix it if you like
-const listenPort = parseInt(Math.random()*16383+49152)  // or random ephemeral port
-
 const os = require('os');
 const fs = require('fs');
 const url = require('url');
@@ -56,6 +52,21 @@ if (!gotTheLock) { console.log("Second instance - quitting."); app.quit(); }
 var RED = require("node-red");
 var red_app = express();
 
+//Read local config file
+let config = {}
+try{
+	const data = fs.readFileSync('./config.json', 'utf-8');
+	config = JSON.parse(data);
+} catch (err) {
+    console.log('Error when read config file');
+    app.exit();
+}
+console.log("Read Config File: ", config)
+
+// TCP port
+const listenPort = config.listenPort
+console.log("redport:",listenPort)
+
 // Add a simple route for static content served from 'public'
 red_app.use("/",express.static("web"));
 //red_app.use(express.static(__dirname +"/public"));
@@ -65,7 +76,8 @@ var server = http.createServer(red_app);
 
 // Setup user directory and flowfile (if editable)
 var userdir = __dirname;
-if (editable === true) {
+
+if (config.editable === true) {
     // if running as raw electron use the current directory (mainly for dev)
     if (process.argv[1] && (process.argv[1] === "main.js")) {
         userdir = __dirname;
@@ -82,7 +94,7 @@ if (editable === true) {
     }
     else { // We set the user directory to be in the users home directory...
         console.log("ARG",process.argv)
-        userdir = os.homedir() + '/.node-red';
+        userdir = __dirname;
         if (!fs.existsSync(userdir)) {
             fs.mkdirSync(userdir);
         }
@@ -110,6 +122,8 @@ if (editable === true) {
 else { store.clear(); }
 
 flowfile = store.get('electronFlow',flowfile);
+console.log("Flow file loaded:",flowfile)
+
 var myFlow;
 try { myFlow = fs.readFileSync(flowfile).toString() }
 catch(e) { myFlow = []; }
@@ -151,6 +165,7 @@ var settings = {
         palette: { editable:addNodes }
     },    // enable projects feature
     functionGlobalContext: { },    // enables global context - add extras ehre if you need them
+    /*
     logging: {
         websock: {
             level: 'info',
@@ -175,6 +190,7 @@ var settings = {
             }
         }
     }
+    */
 };
 if (!editable) {
     settings.httpAdminRoot = false;
@@ -376,7 +392,7 @@ function createWindow() {
         height: 768,
         icon: path.join(__dirname, nrIcon),
         fullscreenable: true,
-        autoHideMenuBar: false,
+        autoHideMenuBar: true,
         // titleBarStyle: "hidden",
         kiosk: kioskMode,
         webPreferences: {
