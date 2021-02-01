@@ -36,7 +36,9 @@
         "node-red-node-base64": "*",
         "node-red-node-geofence": "*",
         "node-red-node-random": "*",
-        "node-red-node-smooth": "*"
+        "node-red-node-smooth": "*",
+        "node-red-contrib-ui-actions": "*",
+        "node-red-contrib-ui-svg": "*"
     },
     "keywords": [
         "electron",
