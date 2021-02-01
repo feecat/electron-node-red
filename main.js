@@ -209,6 +209,9 @@ var template = [{
         },
         { type: 'separator' },
         { role: 'togglefullscreen' },
+        {   label: 'Minimize To Tray',
+            click() { mainWindow.hide(); }
+        },
         { role: 'quit' }
     ]
 }];
@@ -444,7 +447,13 @@ function createWindow() {
     }
 
     // Start the app full screen
-    //mainWindow.setFullScreen(true)
+    if (config.fullscreen){
+        mainWindow.setFullScreen(true)
+    }
+    // Hide app to tray when start
+    if (config.hidetotray){
+        mainWindow.hide();
+    }
 
     // Open the DevTools at start
     //mainWindow.webContents.openDevTools();

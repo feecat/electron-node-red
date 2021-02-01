@@ -4,5 +4,7 @@
     "urlStart": "/ui/",
     "allowLoadSave": false,
     "width": 1024,
-    "height": 768
+    "height": 768,
+    "fullscreen": false,
+    "hidetotray": false
 }
