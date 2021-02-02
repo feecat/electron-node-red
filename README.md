@@ -15,7 +15,7 @@ Just unzip and run. You will see it like this:
 ![](https://github.com/feecat/electron-node-red/blob/master/example/images/2.jpg)  
   
 I'm suggest to use TCP/UDP to create program communication with plcs or others.  
-There is a example, Incloded tcp communication, ui display, retain data, control and so on. will provider later.
+There is a example, Included tcp communication, ui display, retain data, control and so on. will provider later.
 ![](https://github.com/feecat/electron-node-red/blob/master/example/images/3.jpg)  
 
 ------------
