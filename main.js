@@ -64,23 +64,54 @@ var server = http.createServer(red_app);
 // Setup user directory and flowfile (if editable)
 var userdir = __dirname;
 
-// Read flow file
-if (process.argv[1] && (process.argv[1] === "main.js")) {
-    userdir = __dirname;
-    if ((process.argv.length > 2) && ((process.argv[process.argv.length-1].indexOf(".json") > -1) || (process.argv[process.argv.length-1].indexOf(".flow") > -1))) {
-        if (path.isAbsolute(process.argv[process.argv.length-1])) {
-            flowfile = process.argv[process.argv.length-1];
+// Setup user directory and flowfile (if editable)
+var userdir = __dirname;
+if (config.editable === true) {
+    // if running as raw electron use the current directory (mainly for dev)
+    if (process.argv[1] && (process.argv[1] === "main.js")) {
+        userdir = __dirname;
+        if ((process.argv.length > 2) && ((process.argv[process.argv.length-1].indexOf(".json") > -1)||(process.argv[process.argv.length-1].indexOf(".flow") > -1))) {
+            if (path.isAbsolute(process.argv[process.argv.length-1])) {
+                flowfile = process.argv[process.argv.length-1];
+            }
+            else {
+                flowfile = path.join(process.cwd(),process.argv[process.argv.length-1]);
+            }
+            store.set("electronFlow",flowfile)
+        }
+        else { flowfile = path.join(userdir,flowfile); }
+    }
+    else { // We set the user directory to be in the users home directory...
+        console.log("ARG",process.argv)
+        userdir = process.cwd() + '/.node-red';//to use local folder, original is os.homedir() + '/.node-red';
+        if (!fs.existsSync(userdir)) {
+            fs.mkdirSync(userdir);
+        }
+        if ((process.argv.length > 1) && ((process.argv[process.argv.length-1].indexOf(".json") > -1) || (process.argv[process.argv.length-1].indexOf(".flow") > -1))) {
+            if (path.isAbsolute(process.argv[process.argv.length-1])) {
+                flowfile = process.argv[process.argv.length-1];
+            }
+            else {
+                flowfile = path.join(process.cwd(),process.argv[process.argv.length-1]);
+            }
+            store.set("electronFlow",flowfile)
         }
         else {
-            flowfile = path.join(process.cwd(),process.argv[process.argv.length-1]);
+            if (!fs.existsSync(userdir+"/"+flowfile)) {
+                fs.writeFileSync(userdir+"/"+flowfile, fs.readFileSync(__dirname+"/"+flowfile));
+            }
+            let credFile = flowfile.replace(".json","_cred.json");
+            if (fs.existsSync(__dirname+"/"+credFile) && !fs.existsSync(userdir+"/"+credFile)) {
+                fs.writeFileSync(userdir+"/"+credFile, fs.readFileSync(__dirname+"/"+credFile));
+            }
+            flowfile = path.join(userdir,flowfile);
         }
-        store.set("electronFlow",flowfile)
     }
-    else { flowfile = path.join(userdir,flowfile); }
 }
+else { store.clear(); }
 
 flowfile = store.get('electronFlow',flowfile);
-console.log("Flow file loaded from:",flowfile)
+flowfile = './electronflow.json';
 
 var myFlow;
 try { myFlow = fs.readFileSync(flowfile).toString() }
@@ -151,9 +182,6 @@ if (!config.editable) {
     settings.httpAdminRoot = false;
     settings.readOnly = true;
 }
-//save all nodes for local folder
-settings.userDir = './.node-red/';
-settings.nodesDir = './.node-red/node_modules';
 
 // Initialise the runtime with a server and settings
 RED.init(server,settings);
@@ -352,7 +380,8 @@ function createWindow() {
         // titleBarStyle: "hidden",
         kiosk: kioskMode,
         webPreferences: {
-            nodeIntegration: false
+            nodeIntegration: false,
+            contextIsolation: false
         }
     });
 
