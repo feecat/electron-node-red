@@ -29,8 +29,14 @@ Zip **./dist/win-unpacked** and send it to use.
 
 Tips of install nodes on node-red:  
 before zip win-unpacked folder, run Node-RED Electron.exe once, it will create .node-red folder automaticly.  
-cd ./node-red, use npm install packagename to install package, like here [node-red-dashboard](https://flows.nodered.org/node/node-red-dashboard)
+cd ./node-red, use npm install packagename to install package, like here [node-red-dashboard](https://flows.nodered.org/node/node-red-dashboard)  
+  
+Tips of config.json:  
+You can change `listenPort` to other port if you want.  
+Change `width` and `height` to change default window size.  
+Change `fullscreen` or `hidetotray` to change default start action.  
+For others option i'm suggesting you can change the sources code if you want.  
 
 ------------
 
-Thanks
+Thanks [dceejay/electron-node-red](https://github.com/dceejay/electron-node-red)
