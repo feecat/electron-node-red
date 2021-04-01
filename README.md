@@ -15,8 +15,13 @@ Just unzip and run. You will see it like this:
 ![](https://github.com/feecat/electron-node-red/blob/master/example/images/2.jpg)  
   
 I'm suggest to use TCP/UDP to create program communication with plcs or others.  
-There is a example, Included tcp communication, ui display, retain data, control and so on. will provider later.
-![](https://github.com/feecat/electron-node-red/blob/master/example/images/3.jpg)  
+But Sometimes we need specific protocol like beckhoff ads, I had work a little time for this, so i publish it, You can found it in [Releases](https://github.com/feecat/electron-node-red/releases):  
+![](/example/images/2-1.png)  
+![](/example/images/2-2.png)  
+![](/example/images/2-3.png)  
+![](/example/images/2-4.png)  
+
+
 
 ------------
 ## For Developer:  
